@@ -8,11 +8,7 @@ const NUM_CHANNELS = 2;
 const BITS_PER_SAMPLE = 16;
 
 function getApiKey() {
-  return localStorage.getItem("gemini_api_key") || "";
-}
-
-export function setApiKey(key) {
-  localStorage.setItem("gemini_api_key", key);
+  return import.meta.env.VITE_GEMINI_API_KEY || "";
 }
 
 export function hasApiKey() {

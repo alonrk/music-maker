@@ -4,9 +4,8 @@ import { Music, Loader2, Sliders } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import PromptInput from "@/components/PromptInput";
 import GenreSelector from "@/components/GenreSelector";
-import ApiKeyInput from "@/components/ApiKeyInput";
 import { getTrackColor, generateId } from "@/utils/audioUtils";
-import { useMusicGeneration, hasApiKey } from "@/hooks/useMusicGeneration";
+import { useMusicGeneration } from "@/hooks/useMusicGeneration";
 
 const MusicProject = base44.entities.MusicProject;
 
@@ -18,7 +17,6 @@ export default function CreatePage() {
   const [density, setDensity] = useState(0.5);
   const [brightness, setBrightness] = useState(0.5);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [keyReady, setKeyReady] = useState(hasApiKey());
   const [error, setError] = useState(null);
 
   const { generate, isGenerating, progress } = useMusicGeneration();
@@ -67,8 +65,8 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+      <div className="max-w-3xl mx-auto px-6 py-12 pb-24">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 mb-6">
@@ -80,11 +78,6 @@ export default function CreatePage() {
           <p className="text-lg text-white/50">
             Describe your vision, pick a genre, and let AI compose your track
           </p>
-        </div>
-
-        {/* API Key */}
-        <div className="mb-8">
-          <ApiKeyInput onKeySet={() => setKeyReady(true)} />
         </div>
 
         {/* Prompt */}
@@ -183,7 +176,7 @@ export default function CreatePage() {
         {/* Generate Button */}
         <button
           onClick={handleGenerate}
-          disabled={isGenerating || !keyReady || (!prompt.trim() && !genre)}
+          disabled={isGenerating || (!prompt.trim() && !genre)}
           className="w-full py-4 rounded-xl font-semibold text-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 flex items-center justify-center gap-3"
         >
           {isGenerating ? (
