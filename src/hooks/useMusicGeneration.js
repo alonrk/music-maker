@@ -7,12 +7,20 @@ const SAMPLE_RATE = 48000;
 const NUM_CHANNELS = 2;
 const BITS_PER_SAMPLE = 16;
 
-function getApiKey() {
-  return import.meta.env.VITE_GEMINI_API_KEY || "";
-}
+let cachedKey = null;
 
-export function hasApiKey() {
-  return !!getApiKey();
+async function getApiKey() {
+  if (cachedKey) return cachedKey;
+  if (import.meta.env.VITE_GEMINI_API_KEY) {
+    cachedKey = import.meta.env.VITE_GEMINI_API_KEY;
+    return cachedKey;
+  }
+  const res = await base44.functions.invoke("get-api-key");
+  if (res?.key) {
+    cachedKey = res.key;
+    return cachedKey;
+  }
+  return "";
 }
 
 function buildWavBlob(pcmData) {
@@ -51,9 +59,9 @@ export function useMusicGeneration() {
   const sessionRef = useRef(null);
 
   const generate = useCallback(async ({ prompt, genre, bpm, density, brightness, guidance, durationChunks }) => {
-    const apiKey = getApiKey();
+    const apiKey = await getApiKey();
     if (!apiKey) {
-      throw new Error("No Gemini API key configured. Please add your key in settings.");
+      throw new Error("No Gemini API key configured. Add GEMINI_API_KEY in Base44 secrets.");
     }
 
     setIsGenerating(true);

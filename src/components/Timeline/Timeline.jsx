@@ -58,7 +58,7 @@ export default function Timeline({
   const trackAreaHeight = trackRows.length * 72;
 
   return (
-    <div className="flex-1 bg-slate-900 rounded-xl border border-white/10 overflow-hidden flex flex-col">
+    <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col shadow-sm">
       <div
         ref={scrollContainerRef}
         className="overflow-auto flex-1 relative"
@@ -67,7 +67,7 @@ export default function Timeline({
           {/* Time ruler */}
           <div className="sticky top-0 z-20">
             <div className="flex">
-              <div className="w-28 flex-shrink-0 bg-slate-800/80 border-b border-white/10 border-r border-r-white/10 h-8" />
+              <div className="w-28 flex-shrink-0 bg-white border-b border-slate-200 border-r border-r-slate-200 h-7" />
               <TimeRuler
                 pixelsPerSecond={pixelsPerSecond}
                 totalWidth={totalWidth}
@@ -99,7 +99,7 @@ export default function Timeline({
             ))}
 
             {trackRows.length === 0 && (
-              <div className="flex items-center justify-center h-48 text-white/20 text-sm">
+              <div className="flex items-center justify-center h-48 text-slate-300 text-sm">
                 No tracks yet. Generate your first track!
               </div>
             )}

@@ -16,10 +16,10 @@ export default function TrackRow({
   onTrackAreaClick,
 }) {
   return (
-    <div className="flex border-b border-white/5 group">
+    <div className="flex border-b border-slate-100 group">
       {/* Track controls */}
-      <div className="w-28 flex-shrink-0 bg-slate-800/60 border-r border-white/10 p-2 flex flex-col gap-1.5">
-        <div className="text-[11px] text-white/50 font-medium truncate">
+      <div className="w-28 flex-shrink-0 bg-slate-50 border-r border-slate-200 p-2 flex flex-col gap-1.5">
+        <div className="text-[11px] text-slate-400 font-medium truncate">
           Track {rowIndex + 1}
         </div>
         <div className="flex gap-1">
@@ -27,8 +27,8 @@ export default function TrackRow({
             onClick={() => onToggleMute(rowIndex)}
             className={`w-7 h-6 text-[10px] font-bold rounded transition-colors ${
               track.muted
-                ? "bg-red-500/80 text-white"
-                : "bg-white/10 text-white/50 hover:bg-white/20"
+                ? "bg-red-500 text-white"
+                : "bg-slate-200 text-slate-400 hover:bg-slate-300"
             }`}
           >
             M
@@ -37,8 +37,8 @@ export default function TrackRow({
             onClick={() => onToggleSolo(rowIndex)}
             className={`w-7 h-6 text-[10px] font-bold rounded transition-colors ${
               track.solo
-                ? "bg-amber-500/80 text-white"
-                : "bg-white/10 text-white/50 hover:bg-white/20"
+                ? "bg-amber-400 text-white"
+                : "bg-slate-200 text-slate-400 hover:bg-slate-300"
             }`}
           >
             S
@@ -48,7 +48,7 @@ export default function TrackRow({
 
       {/* Track lane */}
       <div
-        className="relative h-[72px] bg-slate-900/40 cursor-pointer"
+        className="relative h-[72px] bg-white cursor-pointer"
         style={{ width: totalWidth }}
         onClick={onTrackAreaClick}
       >

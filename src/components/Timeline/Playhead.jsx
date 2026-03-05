@@ -34,15 +34,21 @@ export default function Playhead({ currentTimeMs, pixelsPerSecond, height, onSee
       className="absolute top-0 z-30 pointer-events-none"
       style={{ left: x, height }}
     >
-      {/* Draggable handle */}
+      {/* Vertical line - centered on x */}
+      <div
+        className="absolute top-0 w-px bg-blue-600"
+        style={{ left: 0, height: "100%" }}
+      />
+      {/* Draggable triangle handle - centered on x */}
       <div
         onMouseDown={handleMouseDown}
-        className="pointer-events-auto cursor-grab active:cursor-grabbing -ml-3 w-6 h-6 flex items-center justify-center"
+        className="absolute pointer-events-auto cursor-grab active:cursor-grabbing"
+        style={{ left: -6, top: -14 }}
       >
-        <div className="w-3 h-3 bg-emerald-400 rounded-full shadow-lg shadow-emerald-400/50" />
+        <svg width="13" height="14" viewBox="0 0 13 14" fill="none">
+          <path d="M0.5 0H12.5V8L6.5 14L0.5 8V0Z" fill="#2563eb" />
+        </svg>
       </div>
-      {/* Vertical line */}
-      <div className="w-px bg-emerald-400 shadow-lg shadow-emerald-400/50" style={{ height: "100%" }} />
     </div>
   );
 }

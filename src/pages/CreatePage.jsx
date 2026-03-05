@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Music, Loader2, Sliders } from "lucide-react";
+import { Music, Loader2, Sliders, ChevronDown, ChevronUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import PromptInput from "@/components/PromptInput";
-import GenreSelector from "@/components/GenreSelector";
+import { GENRES } from "@/utils/genres";
 import { getTrackColor, generateId } from "@/utils/audioUtils";
 import { useMusicGeneration } from "@/hooks/useMusicGeneration";
 
@@ -64,139 +63,198 @@ export default function CreatePage() {
     }
   };
 
+  const handleChipClick = (g) => {
+    setGenre(genre === g.id ? null : g.id);
+    if (!prompt.trim()) {
+      setPrompt(g.description);
+    }
+  };
+
+  const canGenerate = prompt.trim() || genre;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
-      <div className="max-w-3xl mx-auto px-6 py-12 pb-24">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 mb-6">
-            <Music className="w-8 h-8 text-emerald-400" />
-          </div>
-          <h1 className="text-4xl font-bold tracking-tight mb-3">
-            AI Music Maker
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-emerald-50/20 overflow-y-auto">
+      <div className="max-w-3xl mx-auto px-6 flex flex-col items-center">
+        {/* Hero */}
+        <div className="text-center pt-24 pb-10">
+          <h1 className="text-5xl sm:text-6xl font-light tracking-tight text-slate-800 leading-tight">
+            Your music, imagined
           </h1>
-          <p className="text-lg text-white/50">
-            Describe your vision, pick a genre, and let AI compose your track
+          <p className="mt-4 text-base sm:text-lg text-slate-400 max-w-lg mx-auto">
+            Describe the sound in your head and let AI bring it to life
+            as a fully produced track.
           </p>
         </div>
 
-        {/* Prompt */}
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-white/60 mb-2">Your Prompt</label>
-          <PromptInput value={prompt} onChange={setPrompt} disabled={isGenerating} />
+        {/* Prompt card */}
+        <div className="w-full max-w-2xl">
+          <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-200/80 p-2">
+            <div className="flex items-start gap-2">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                disabled={isGenerating}
+                placeholder="A dreamy lo-fi beat with gentle piano and warm vinyl crackle..."
+                rows={2}
+                className="flex-1 px-4 py-3 text-slate-700 placeholder-slate-300 resize-none focus:outline-none text-base bg-transparent disabled:opacity-50"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && canGenerate) {
+                    e.preventDefault();
+                    handleGenerate();
+                  }
+                }}
+              />
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating || !canGenerate}
+                className="flex-shrink-0 px-5 py-3 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 mt-0.5"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="hidden sm:inline">{progress || "Creating..."}</span>
+                  </>
+                ) : (
+                  <>
+                    <Music className="w-4 h-4" />
+                    <span>Create with AI</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Selected genre tag inside card */}
+            {genre && (
+              <div className="px-3 pb-2 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium border border-blue-100">
+                  {GENRES.find((g) => g.id === genre)?.icon}{" "}
+                  {GENRES.find((g) => g.id === genre)?.label}
+                  <button
+                    onClick={() => setGenre(null)}
+                    className="ml-1 text-blue-400 hover:text-blue-600"
+                  >
+                    &times;
+                  </button>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {isGenerating && (
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <div className="flex gap-1">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="w-1 bg-blue-400 rounded-full animate-pulse"
+                    style={{
+                      height: `${12 + Math.random() * 16}px`,
+                      animationDelay: `${i * 150}ms`,
+                      animationDuration: "800ms",
+                    }}
+                  />
+                ))}
+              </div>
+              <p className="text-sm text-slate-400">
+                Composing your track with Lyria...
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-100 text-red-500 text-sm text-center">
+              {error}
+            </div>
+          )}
         </div>
 
-        {/* Genre */}
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-white/60 mb-3">Choose a Genre</label>
-          <GenreSelector selected={genre} onSelect={setGenre} />
+        {/* Genre chips */}
+        <div className="mt-8 text-center w-full max-w-2xl">
+          <p className="text-sm text-slate-400 mb-3">
+            Not sure where to start? Try one of these:
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {GENRES.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => handleChipClick(g)}
+                disabled={isGenerating}
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm transition-all duration-150 border disabled:opacity-50
+                  ${genre === g.id
+                    ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:shadow-sm"
+                  }
+                `}
+              >
+                <span>{g.icon}</span>
+                {g.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Advanced Controls */}
-        <div className="mb-8">
+        {/* Advanced controls toggle */}
+        <div className="mt-10 w-full max-w-2xl">
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors"
+            className="mx-auto flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-500 transition-colors"
           >
-            <Sliders className="w-4 h-4" />
-            {showAdvanced ? "Hide" : "Show"} Advanced Controls
+            <Sliders className="w-3.5 h-3.5" />
+            Advanced
+            {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
           {showAdvanced && (
-            <div className="mt-4 p-5 rounded-xl bg-white/5 border border-white/10 space-y-5">
+            <div className="mt-4 p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-white/60">BPM</span>
-                  <span className="text-emerald-400 font-mono">{bpm}</span>
+                  <span className="text-slate-500">BPM</span>
+                  <span className="text-slate-700 font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{bpm}</span>
                 </div>
                 <input
-                  type="range"
-                  min={60}
-                  max={200}
-                  value={bpm}
+                  type="range" min={60} max={200} value={bpm}
                   onChange={(e) => setBpm(Number(e.target.value))}
-                  className="w-full accent-emerald-500"
+                  className="w-full"
                 />
-                <div className="flex justify-between text-xs text-white/30 mt-1">
-                  <span>60</span>
-                  <span>200</span>
+                <div className="flex justify-between text-xs text-slate-300 mt-1">
+                  <span>60</span><span>200</span>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-white/60">Density</span>
-                  <span className="text-emerald-400 font-mono">{density.toFixed(1)}</span>
+                  <span className="text-slate-500">Density</span>
+                  <span className="text-slate-700 font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{density.toFixed(1)}</span>
                 </div>
                 <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.1}
-                  value={density}
+                  type="range" min={0} max={1} step={0.1} value={density}
                   onChange={(e) => setDensity(Number(e.target.value))}
-                  className="w-full accent-emerald-500"
+                  className="w-full"
                 />
-                <div className="flex justify-between text-xs text-white/30 mt-1">
-                  <span>Sparse</span>
-                  <span>Dense</span>
+                <div className="flex justify-between text-xs text-slate-300 mt-1">
+                  <span>Sparse</span><span>Dense</span>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-white/60">Brightness</span>
-                  <span className="text-emerald-400 font-mono">{brightness.toFixed(1)}</span>
+                  <span className="text-slate-500">Brightness</span>
+                  <span className="text-slate-700 font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{brightness.toFixed(1)}</span>
                 </div>
                 <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.1}
-                  value={brightness}
+                  type="range" min={0} max={1} step={0.1} value={brightness}
                   onChange={(e) => setBrightness(Number(e.target.value))}
-                  className="w-full accent-emerald-500"
+                  className="w-full"
                 />
-                <div className="flex justify-between text-xs text-white/30 mt-1">
-                  <span>Dark</span>
-                  <span>Bright</span>
+                <div className="flex justify-between text-xs text-slate-300 mt-1">
+                  <span>Dark</span><span>Bright</span>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-            {error}
-          </div>
-        )}
-
-        {/* Generate Button */}
-        <button
-          onClick={handleGenerate}
-          disabled={isGenerating || (!prompt.trim() && !genre)}
-          className="w-full py-4 rounded-xl font-semibold text-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 flex items-center justify-center gap-3"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              {progress || "Generating..."}
-            </>
-          ) : (
-            <>
-              <Music className="w-5 h-5" />
-              Generate Track
-            </>
-          )}
-        </button>
-
-        {isGenerating && (
-          <p className="text-center text-white/30 text-sm mt-3">
-            Music is being generated in your browser via Lyria RealTime...
-          </p>
-        )}
+        <div className="h-24" />
       </div>
     </div>
   );

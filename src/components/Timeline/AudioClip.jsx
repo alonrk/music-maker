@@ -2,6 +2,21 @@ import { useRef, useState, useCallback } from "react";
 import { msToPixels } from "@/utils/audioUtils";
 import { useWaveform } from "@/hooks/useWaveform";
 
+const LIGHT_TRACK_COLORS = {
+  "#10b981": "#059669",
+  "#3b82f6": "#2563eb",
+  "#f59e0b": "#d97706",
+  "#8b5cf6": "#7c3aed",
+  "#ef4444": "#dc2626",
+  "#ec4899": "#db2777",
+  "#06b6d4": "#0891b2",
+  "#84cc16": "#65a30d",
+};
+
+function getDisplayColor(color) {
+  return LIGHT_TRACK_COLORS[color] || color || "#2563eb";
+}
+
 export default function AudioClip({
   clip,
   pixelsPerSecond,
@@ -20,8 +35,9 @@ export default function AudioClip({
   const clipWidth = msToPixels(clip.duration_ms, pixelsPerSecond);
   const clipLeft = msToPixels(clip.position_ms, pixelsPerSecond);
   const displayWidth = Math.max(clipWidth, 20);
+  const displayColor = getDisplayColor(clip.color);
 
-  useWaveform(canvasRef, waveformData, clip.color || "#10b981", displayWidth - 8, 52);
+  useWaveform(canvasRef, waveformData, displayColor, displayWidth - 8, 52);
 
   const handleMouseDown = useCallback((e) => {
     if (e.button !== 0) return;
@@ -75,19 +91,20 @@ export default function AudioClip({
     <div
       ref={clipRef}
       onMouseDown={handleMouseDown}
-      className={`absolute top-1 bottom-1 rounded-lg cursor-grab overflow-hidden transition-shadow
-        ${isSelected ? "ring-2 ring-emerald-400 shadow-lg" : ""}
+      className={`absolute top-1 bottom-1 rounded-lg cursor-grab overflow-hidden transition-shadow border
+        ${isSelected ? "ring-2 ring-blue-500 shadow-md" : "border-slate-200"}
         ${isDragging ? "cursor-grabbing opacity-80" : ""}
         ${isTrimming ? "cursor-ew-resize" : ""}
       `}
       style={{
         left: clipLeft,
         width: displayWidth,
-        backgroundColor: (clip.color || "#10b981") + "15",
-        borderLeft: `3px solid ${clip.color || "#10b981"}`,
+        backgroundColor: displayColor + "18",
+        borderLeftWidth: 3,
+        borderLeftColor: displayColor,
       }}
     >
-      <div className="px-1 pt-0.5 text-[10px] text-white/60 truncate font-medium">
+      <div className="px-1.5 pt-0.5 text-[10px] text-slate-500 truncate font-medium">
         {clip.name}
       </div>
       <canvas
@@ -96,7 +113,7 @@ export default function AudioClip({
         style={{ height: 52 }}
       />
       {/* Trim handle on right edge */}
-      <div className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 transition-colors" />
+      <div className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-black/5 transition-colors" />
     </div>
   );
 }

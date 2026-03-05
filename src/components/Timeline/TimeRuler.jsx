@@ -24,17 +24,23 @@ export default function TimeRuler({ pixelsPerSecond, totalWidth, scrollLeft, onC
 
   return (
     <div
-      className="h-8 bg-slate-800/80 border-b border-white/10 relative cursor-pointer select-none flex-shrink-0"
+      className="h-7 bg-white border-b border-slate-200 relative cursor-pointer select-none flex-shrink-0"
       onClick={handleClick}
       style={{ width: totalWidth }}
     >
       {ticks.map((tick) => (
         <div key={tick.seconds} className="absolute top-0 h-full" style={{ left: tick.x }}>
-          <div className={`w-px ${tick.isMajor ? "h-full bg-white/20" : "h-3 bg-white/10"}`} style={{ marginTop: tick.isMajor ? 0 : "auto" }} />
+          <div
+            className={`w-px ${tick.isMajor ? "h-full bg-slate-200" : "h-2 bg-slate-200"}`}
+            style={{ marginTop: tick.isMajor ? 0 : "auto" }}
+          />
           {tick.isMajor && (
-            <span className="absolute top-1 left-1.5 text-[10px] text-white/40 font-mono whitespace-nowrap">
+            <span className="absolute top-1.5 left-1.5 text-[10px] text-slate-400 font-mono whitespace-nowrap">
               {formatTime(tick.seconds * 1000)}
             </span>
+          )}
+          {!tick.isMajor && (
+            <div className="absolute top-[10px] left-[-1px] w-[3px] h-[3px] rounded-full bg-slate-300" />
           )}
         </div>
       ))}

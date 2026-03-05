@@ -29,7 +29,6 @@ export default function EditorPage() {
   const timeline = useTimeline();
   const musicGen = useMusicGeneration();
 
-  // Load project
   useEffect(() => {
     async function load() {
       try {
@@ -43,7 +42,6 @@ export default function EditorPage() {
         for (let i = 0; i <= Math.max(maxRow, 0); i++) {
           rows.push({ muted: false, solo: false });
         }
-        // Apply saved mute/solo from tracks
         projectTracks.forEach((t) => {
           const row = t.track_row ?? 0;
           if (rows[row]) {
@@ -61,7 +59,6 @@ export default function EditorPage() {
     load();
   }, [projectId]);
 
-  // Load audio buffers
   useEffect(() => {
     if (tracks.length === 0) return;
     let cancelled = false;
@@ -92,7 +89,6 @@ export default function EditorPage() {
     return tracks.reduce((max, t) => Math.max(max, (t.position_ms || 0) + (t.duration_ms || 0)), 0);
   }, [tracks]);
 
-  // Playback-ready tracks with row mute/solo state
   const playbackTracks = useMemo(() => {
     return tracks.map((t) => {
       const row = trackRows[t.track_row ?? 0] || {};
@@ -270,74 +266,15 @@ export default function EditorPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
-      {/* Top bar */}
-      <div className="h-12 bg-slate-800/80 border-b border-white/10 flex items-center px-4 gap-4 flex-shrink-0">
-        <button
-          onClick={() => navigate("/")}
-          className="text-white/50 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="text-sm font-medium text-white/80 truncate flex-1">
-          {project?.name || "Untitled Project"}
-        </div>
-        <div className="flex items-center gap-2">
-          <GeneratePanel
-            isOpen={generatePanelOpen}
-            onClose={(close) => setGeneratePanelOpen(!close)}
-            onGenerate={handleGenerateTrack}
-            isGenerating={musicGen.isGenerating}
-            progress={musicGen.progress}
-          />
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-white/70 hover:text-white transition-colors"
-          >
-            {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            Save
-          </button>
-        </div>
-      </div>
-
-      {/* Main area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Timeline */}
-        <div className="flex-1 flex flex-col overflow-hidden p-2">
-          <Timeline
-            tracks={tracks}
-            trackRows={trackRows}
-            pixelsPerSecond={timeline.pixelsPerSecond}
-            currentTimeMs={engine.currentTime}
-            selectedClipId={timeline.selectedClipId}
-            onSelectClip={timeline.setSelectedClipId}
-            onToggleMute={handleToggleMute}
-            onToggleSolo={handleToggleSolo}
-            onClipDragEnd={handleClipDragEnd}
-            onClipTrimEnd={handleClipTrimEnd}
-            onSeek={handleSeek}
-            getWaveform={engine.getWaveform}
-          />
-        </div>
-
-        {/* Toolbar */}
-        <Toolbar
-          selectedClipId={timeline.selectedClipId}
-          onAction={handleToolbarAction}
-          onZoomIn={timeline.zoomIn}
-          onZoomOut={timeline.zoomOut}
-        />
-      </div>
-
-      {/* Player Controls */}
+    <div className="h-screen bg-slate-50 text-slate-800 flex flex-col overflow-hidden">
+      {/* Top bar: player controls + transport */}
       <PlayerControls
         isPlaying={engine.isPlaying}
         currentTime={engine.currentTime}
@@ -347,7 +284,65 @@ export default function EditorPage() {
         onPause={handlePause}
         onStop={handleStop}
         onVolumeChange={engine.changeMasterVolume}
+        onZoomIn={timeline.zoomIn}
+        onZoomOut={timeline.zoomOut}
       />
+
+      {/* Secondary bar: nav, tools, generate, save */}
+      <div className="h-10 bg-white border-b border-slate-200 flex items-center px-3 gap-2 flex-shrink-0">
+        <button
+          onClick={() => navigate("/")}
+          className="text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="text-sm font-medium text-slate-600 truncate">
+          {project?.name || "Untitled Project"}
+        </div>
+
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        <Toolbar
+          selectedClipId={timeline.selectedClipId}
+          onAction={handleToolbarAction}
+        />
+
+        <div className="flex-1" />
+
+        <GeneratePanel
+          isOpen={generatePanelOpen}
+          onClose={(close) => setGeneratePanelOpen(!close)}
+          onGenerate={handleGenerateTrack}
+          isGenerating={musicGen.isGenerating}
+          progress={musicGen.progress}
+        />
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm text-slate-600 hover:text-slate-800 transition-colors"
+        >
+          {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+          Save
+        </button>
+      </div>
+
+      {/* Main area: timeline only */}
+      <div className="flex-1 flex overflow-hidden p-2">
+        <Timeline
+          tracks={tracks}
+          trackRows={trackRows}
+          pixelsPerSecond={timeline.pixelsPerSecond}
+          currentTimeMs={engine.currentTime}
+          selectedClipId={timeline.selectedClipId}
+          onSelectClip={timeline.setSelectedClipId}
+          onToggleMute={handleToggleMute}
+          onToggleSolo={handleToggleSolo}
+          onClipDragEnd={handleClipDragEnd}
+          onClipTrimEnd={handleClipTrimEnd}
+          onSeek={handleSeek}
+          getWaveform={engine.getWaveform}
+        />
+      </div>
     </div>
   );
 }

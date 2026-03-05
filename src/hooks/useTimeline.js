@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 
-const MIN_PPS = 20;
+const MIN_PPS = 10;
 const MAX_PPS = 400;
-const DEFAULT_PPS = 100;
+const DEFAULT_PPS = 17;
 
 export function useTimeline() {
   const [pixelsPerSecond, setPixelsPerSecond] = useState(DEFAULT_PPS);

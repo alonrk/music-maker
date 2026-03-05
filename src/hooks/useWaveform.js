@@ -17,7 +17,7 @@ export function useWaveform(canvasRef, waveformData, color, width, height) {
     const barWidth = Math.max(1, width / waveformData.length - 0.5);
     const mid = height / 2;
 
-    ctx.fillStyle = color + "40";
+    ctx.fillStyle = color + "25";
     ctx.beginPath();
     for (let i = 0; i < waveformData.length; i++) {
       const x = (i / waveformData.length) * width;
@@ -26,7 +26,7 @@ export function useWaveform(canvasRef, waveformData, color, width, height) {
     }
     ctx.fill();
 
-    ctx.strokeStyle = color + "90";
+    ctx.strokeStyle = color + "70";
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i < waveformData.length; i++) {
