@@ -1,8 +1,8 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useCallback } from "react";
 import TimeRuler from "./TimeRuler";
 import TrackRow from "./TrackRow";
 import Playhead from "./Playhead";
-import { msToPixels } from "@/utils/audioUtils";
+import { msToPixels, pixelsToMs } from "@/utils/audioUtils";
 
 export default function Timeline({
   tracks,
@@ -31,11 +31,18 @@ export default function Timeline({
   }, [tracks]);
 
   const totalWidth = msToPixels(totalDurationMs, pixelsPerSecond);
-  const totalHeight = Math.max(trackRows.length * 72 + 32, 200);
 
   const handleRulerClick = (ms) => {
     onSeek?.(ms);
   };
+
+  const handleTrackAreaClick = useCallback((e) => {
+    if (e.target !== e.currentTarget) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const ms = pixelsToMs(x, pixelsPerSecond);
+    onSeek?.(Math.max(0, ms));
+  }, [pixelsPerSecond, onSeek]);
 
   const clipsByRow = useMemo(() => {
     const map = {};
@@ -47,6 +54,8 @@ export default function Timeline({
     });
     return map;
   }, [tracks, trackRows]);
+
+  const trackAreaHeight = trackRows.length * 72;
 
   return (
     <div className="flex-1 bg-slate-900 rounded-xl border border-white/10 overflow-hidden flex flex-col">
@@ -85,6 +94,7 @@ export default function Timeline({
                 onClipDragEnd={onClipDragEnd}
                 onClipTrimEnd={onClipTrimEnd}
                 getWaveform={getWaveform}
+                onTrackAreaClick={handleTrackAreaClick}
               />
             ))}
 
@@ -95,11 +105,12 @@ export default function Timeline({
             )}
 
             {/* Playhead overlay */}
-            <div className="absolute top-0 left-28 right-0 pointer-events-none" style={{ height: totalHeight - 32 }}>
+            <div className="absolute top-0 left-28 right-0 pointer-events-none" style={{ height: trackAreaHeight }}>
               <Playhead
                 currentTimeMs={currentTimeMs}
                 pixelsPerSecond={pixelsPerSecond}
-                height={trackRows.length * 72}
+                height={trackAreaHeight}
+                onSeek={onSeek}
               />
             </div>
           </div>

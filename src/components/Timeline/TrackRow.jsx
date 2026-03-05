@@ -13,6 +13,7 @@ export default function TrackRow({
   onClipDragEnd,
   onClipTrimEnd,
   getWaveform,
+  onTrackAreaClick,
 }) {
   return (
     <div className="flex border-b border-white/5 group">
@@ -47,8 +48,9 @@ export default function TrackRow({
 
       {/* Track lane */}
       <div
-        className="relative h-[72px] bg-slate-900/40"
+        className="relative h-[72px] bg-slate-900/40 cursor-pointer"
         style={{ width: totalWidth }}
+        onClick={onTrackAreaClick}
       >
         {clips.map((clip) => (
           <AudioClip
