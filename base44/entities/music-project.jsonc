@@ -1,0 +1,40 @@
+{
+  "name": "MusicProject",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Project title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional project description"
+    },
+    "bpm": {
+      "type": "integer",
+      "description": "Beats per minute",
+      "default": 120
+    },
+    "tracks": {
+      "type": "array",
+      "description": "Embedded track data",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "audio_url": { "type": "string", "format": "uri" },
+          "prompt": { "type": "string" },
+          "genre": { "type": "string" },
+          "position_ms": { "type": "number" },
+          "duration_ms": { "type": "number" },
+          "track_row": { "type": "integer" },
+          "muted": { "type": "boolean" },
+          "solo": { "type": "boolean" },
+          "color": { "type": "string" }
+        }
+      }
+    }
+  },
+  "required": ["name"]
+}
