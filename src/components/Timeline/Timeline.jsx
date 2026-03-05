@@ -55,19 +55,23 @@ export default function Timeline({
     return map;
   }, [tracks, trackRows]);
 
-  const trackAreaHeight = trackRows.length * 72;
+  const mobileRowHeight = 56;
+  const desktopRowHeight = 72;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+  const rowHeight = isMobile ? mobileRowHeight : desktopRowHeight;
+  const trackAreaHeight = trackRows.length * rowHeight;
 
   return (
-    <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col shadow-sm">
+    <div className="flex-1 bg-white rounded-lg sm:rounded-xl border border-slate-200 overflow-hidden flex flex-col shadow-sm">
       <div
         ref={scrollContainerRef}
-        className="overflow-auto flex-1 relative"
+        className="overflow-auto flex-1 relative touch-pan-x touch-pan-y"
       >
         <div style={{ minWidth: totalWidth }}>
           {/* Time ruler */}
           <div className="sticky top-0 z-20">
             <div className="flex">
-              <div className="w-28 flex-shrink-0 bg-white border-b border-slate-200 border-r border-r-slate-200 h-7" />
+              <div className="w-16 sm:w-28 flex-shrink-0 bg-white border-b border-slate-200 border-r border-r-slate-200 h-7" />
               <TimeRuler
                 pixelsPerSecond={pixelsPerSecond}
                 totalWidth={totalWidth}
@@ -99,13 +103,13 @@ export default function Timeline({
             ))}
 
             {trackRows.length === 0 && (
-              <div className="flex items-center justify-center h-48 text-slate-300 text-sm">
+              <div className="flex items-center justify-center h-32 sm:h-48 text-slate-300 text-xs sm:text-sm">
                 No tracks yet. Generate your first track!
               </div>
             )}
 
             {/* Playhead overlay */}
-            <div className="absolute top-0 left-28 right-0 pointer-events-none" style={{ height: trackAreaHeight }}>
+            <div className="absolute top-0 left-16 sm:left-28 right-0 pointer-events-none" style={{ height: trackAreaHeight }}>
               <Playhead
                 currentTimeMs={currentTimeMs}
                 pixelsPerSecond={pixelsPerSecond}

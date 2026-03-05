@@ -14,14 +14,19 @@ export default function PlayerControls({
   onZoomOut,
 }) {
   return (
-    <div className="h-12 bg-white border-b border-slate-200 flex items-center px-4 gap-3 flex-shrink-0">
-      {/* Left: volume */}
-      <div className="flex items-center gap-2 min-w-[120px]">
-        {masterVolume === 0 ? (
-          <VolumeX className="w-4 h-4 text-slate-400" />
-        ) : (
-          <Volume2 className="w-4 h-4 text-slate-400" />
-        )}
+    <div className="h-12 bg-white border-b border-slate-200 flex items-center px-2 sm:px-4 gap-1 sm:gap-3 flex-shrink-0">
+      {/* Left: volume - icon only on mobile, slider on desktop */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onVolumeChange(masterVolume === 0 ? 0.8 : 0)}
+          className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 sm:hover:bg-transparent transition-colors"
+        >
+          {masterVolume === 0 ? (
+            <VolumeX className="w-4 h-4" />
+          ) : (
+            <Volume2 className="w-4 h-4" />
+          )}
+        </button>
         <input
           type="range"
           min={0}
@@ -29,14 +34,14 @@ export default function PlayerControls({
           step={0.01}
           value={masterVolume}
           onChange={(e) => onVolumeChange(Number(e.target.value))}
-          className="w-20"
+          className="w-16 hidden sm:block"
         />
       </div>
 
       <div className="flex-1" />
 
       {/* Center: transport */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         <button
           onClick={onStop}
           className="w-8 h-8 flex items-center justify-center rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
@@ -62,8 +67,8 @@ export default function PlayerControls({
       <div className="flex-1" />
 
       {/* Right: zoom + time */}
-      <div className="flex items-center gap-3 min-w-[200px] justify-end">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5 sm:gap-3 justify-end">
+        <div className="hidden sm:flex items-center gap-1">
           <button onClick={onZoomOut} className="text-slate-400 hover:text-slate-600 transition-colors">
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
@@ -74,7 +79,16 @@ export default function PlayerControls({
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="font-mono text-xs text-slate-500 tabular-nums">
+        {/* Mobile: compact zoom buttons */}
+        <div className="flex sm:hidden items-center gap-0.5">
+          <button onClick={onZoomOut} className="w-7 h-7 flex items-center justify-center text-slate-400">
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onZoomIn} className="w-7 h-7 flex items-center justify-center text-slate-400">
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="font-mono text-[10px] sm:text-xs text-slate-500 tabular-nums whitespace-nowrap">
           {formatTime(currentTime)} / {formatTime(totalDuration)}
         </div>
       </div>

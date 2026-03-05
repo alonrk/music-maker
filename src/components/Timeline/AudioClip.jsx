@@ -17,6 +17,12 @@ function getDisplayColor(color) {
   return LIGHT_TRACK_COLORS[color] || color || "#2563eb";
 }
 
+function getClientX(e) {
+  if (e.touches && e.touches.length > 0) return e.touches[0].clientX;
+  if (e.changedTouches && e.changedTouches.length > 0) return e.changedTouches[0].clientX;
+  return e.clientX;
+}
+
 export default function AudioClip({
   clip,
   pixelsPerSecond,
@@ -39,22 +45,22 @@ export default function AudioClip({
 
   useWaveform(canvasRef, waveformData, displayColor, displayWidth - 8, 52);
 
-  const handleMouseDown = useCallback((e) => {
-    if (e.button !== 0) return;
-    e.stopPropagation();
-    onSelect(clip.id);
-
-    const isEdge = e.nativeEvent.offsetX > clipRef.current.offsetWidth - 8;
+  const startDrag = useCallback((startX, isEdge, isTouch) => {
     if (isEdge) {
       setIsTrimming(true);
-      dragStartRef.current = { x: e.clientX, startDuration: clip.duration_ms };
+      dragStartRef.current = { x: startX, startDuration: clip.duration_ms };
     } else {
       setIsDragging(true);
-      dragStartRef.current = { x: e.clientX, startPos: clip.position_ms };
+      dragStartRef.current = { x: startX, startPos: clip.position_ms };
     }
 
-    const handleMouseMove = (moveE) => {
-      const dx = moveE.clientX - dragStartRef.current.x;
+    const moveEvent = isTouch ? "touchmove" : "mousemove";
+    const endEvent = isTouch ? "touchend" : "mouseup";
+
+    const handleMove = (moveE) => {
+      if (isTouch) moveE.preventDefault();
+      const cx = getClientX(moveE);
+      const dx = cx - dragStartRef.current.x;
       if (isEdge) {
         const durationDelta = (dx / pixelsPerSecond) * 1000;
         const newDuration = Math.max(500, dragStartRef.current.startDuration + durationDelta);
@@ -66,8 +72,9 @@ export default function AudioClip({
       }
     };
 
-    const handleMouseUp = (upE) => {
-      const dx = upE.clientX - dragStartRef.current.x;
+    const handleEnd = (endE) => {
+      const cx = getClientX(endE);
+      const dx = cx - dragStartRef.current.x;
       if (isEdge) {
         const durationDelta = (dx / pixelsPerSecond) * 1000;
         const newDuration = Math.max(500, dragStartRef.current.startDuration + durationDelta);
@@ -79,19 +86,38 @@ export default function AudioClip({
       }
       setIsDragging(false);
       setIsTrimming(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener(moveEvent, handleMove);
+      document.removeEventListener(endEvent, handleEnd);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  }, [clip, pixelsPerSecond, onSelect, onDragEnd, onTrimEnd]);
+    document.addEventListener(moveEvent, handleMove, { passive: false });
+    document.addEventListener(endEvent, handleEnd);
+  }, [clip, pixelsPerSecond, onDragEnd, onTrimEnd]);
+
+  const handleMouseDown = useCallback((e) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    onSelect(clip.id);
+    const isEdge = e.nativeEvent.offsetX > clipRef.current.offsetWidth - 8;
+    startDrag(e.clientX, isEdge, false);
+  }, [clip.id, onSelect, startDrag]);
+
+  const handleTouchStart = useCallback((e) => {
+    e.stopPropagation();
+    onSelect(clip.id);
+    const touch = e.touches[0];
+    const rect = clipRef.current.getBoundingClientRect();
+    const offsetX = touch.clientX - rect.left;
+    const isEdge = offsetX > rect.width - 16;
+    startDrag(touch.clientX, isEdge, true);
+  }, [clip.id, onSelect, startDrag]);
 
   return (
     <div
       ref={clipRef}
       onMouseDown={handleMouseDown}
-      className={`absolute top-1 bottom-1 rounded-lg cursor-grab overflow-hidden transition-shadow border
+      onTouchStart={handleTouchStart}
+      className={`absolute top-1 bottom-1 rounded-lg cursor-grab overflow-hidden transition-shadow border touch-none
         ${isSelected ? "ring-2 ring-blue-500 shadow-md" : "border-slate-200"}
         ${isDragging ? "cursor-grabbing opacity-80" : ""}
         ${isTrimming ? "cursor-ew-resize" : ""}
@@ -113,7 +139,7 @@ export default function AudioClip({
         style={{ height: 52 }}
       />
       {/* Trim handle on right edge */}
-      <div className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-black/5 transition-colors" />
+      <div className="absolute right-0 top-0 bottom-0 w-4 cursor-ew-resize hover:bg-black/5 transition-colors" />
     </div>
   );
 }

@@ -17,15 +17,16 @@ export default function TrackRow({
 }) {
   return (
     <div className="flex border-b border-slate-100 group">
-      {/* Track controls */}
-      <div className="w-28 flex-shrink-0 bg-slate-50 border-r border-slate-200 p-2 flex flex-col gap-1.5">
-        <div className="text-[11px] text-slate-400 font-medium truncate">
-          Track {rowIndex + 1}
+      {/* Track controls - narrower on mobile */}
+      <div className="w-16 sm:w-28 flex-shrink-0 bg-slate-50 border-r border-slate-200 p-1.5 sm:p-2 flex flex-col gap-1 sm:gap-1.5">
+        <div className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">
+          <span className="sm:hidden">T{rowIndex + 1}</span>
+          <span className="hidden sm:inline">Track {rowIndex + 1}</span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-0.5 sm:gap-1">
           <button
             onClick={() => onToggleMute(rowIndex)}
-            className={`w-7 h-6 text-[10px] font-bold rounded transition-colors ${
+            className={`w-6 sm:w-7 h-5 sm:h-6 text-[9px] sm:text-[10px] font-bold rounded transition-colors ${
               track.muted
                 ? "bg-red-500 text-white"
                 : "bg-slate-200 text-slate-400 hover:bg-slate-300"
@@ -35,7 +36,7 @@ export default function TrackRow({
           </button>
           <button
             onClick={() => onToggleSolo(rowIndex)}
-            className={`w-7 h-6 text-[10px] font-bold rounded transition-colors ${
+            className={`w-6 sm:w-7 h-5 sm:h-6 text-[9px] sm:text-[10px] font-bold rounded transition-colors ${
               track.solo
                 ? "bg-amber-400 text-white"
                 : "bg-slate-200 text-slate-400 hover:bg-slate-300"
@@ -48,7 +49,7 @@ export default function TrackRow({
 
       {/* Track lane */}
       <div
-        className="relative h-[72px] bg-white cursor-pointer"
+        className="relative h-[56px] sm:h-[72px] bg-white cursor-pointer"
         style={{ width: totalWidth }}
         onClick={onTrackAreaClick}
       >

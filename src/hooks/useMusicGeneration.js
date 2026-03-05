@@ -3,6 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 import { base44 } from "@/api/base44Client";
 
 const MODEL_ID = "models/lyria-realtime-exp";
+const VISION_MODEL = "gemini-2.5-flash";
 const SAMPLE_RATE = 48000;
 const NUM_CHANNELS = 2;
 const BITS_PER_SAMPLE = 16;
@@ -21,6 +22,45 @@ async function getApiKey() {
     return cachedKey;
   }
   return "";
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function describeImageForMusic(ai, imageFile) {
+  const base64Data = await fileToBase64(imageFile);
+  const mimeType = imageFile.type || "image/jpeg";
+
+  const response = await ai.models.generateContent({
+    model: VISION_MODEL,
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            inlineData: {
+              mimeType,
+              data: base64Data,
+            },
+          },
+          {
+            text: `You are a music producer. Analyze this image and describe the ideal music that would match its mood, atmosphere, colors, and subject matter. Be specific about: genre, tempo (slow/medium/fast), instruments, mood/emotion, and energy level. Output ONLY the music description in 2-3 sentences, no preamble.`,
+          },
+        ],
+      },
+    ],
+  });
+
+  return response.text;
 }
 
 function buildWavBlob(pcmData) {
@@ -58,7 +98,7 @@ export function useMusicGeneration() {
   const [progress, setProgress] = useState("");
   const sessionRef = useRef(null);
 
-  const generate = useCallback(async ({ prompt, genre, bpm, density, brightness, guidance, durationChunks }) => {
+  const generate = useCallback(async ({ prompt, genre, bpm, density, brightness, guidance, durationChunks, imageFile }) => {
     const apiKey = await getApiKey();
     if (!apiKey) {
       throw new Error("No Gemini API key configured. Add GEMINI_API_KEY in Base44 secrets.");
@@ -69,12 +109,21 @@ export function useMusicGeneration() {
 
     try {
       const ai = new GoogleGenAI({ apiKey, httpOptions: { apiVersion: "v1alpha" } });
+
+      let imageDescription = "";
+      if (imageFile) {
+        setProgress("Analyzing image...");
+        const visionAi = new GoogleGenAI({ apiKey });
+        imageDescription = await describeImageForMusic(visionAi, imageFile);
+      }
+
       const maxChunks = durationChunks || 15;
       const audioChunks = [];
 
       const weightedPrompts = [];
       if (genre) weightedPrompts.push({ text: genre, weight: 1.0 });
-      if (prompt) weightedPrompts.push({ text: prompt, weight: 1.5 });
+      if (imageDescription) weightedPrompts.push({ text: imageDescription, weight: 1.5 });
+      if (prompt) weightedPrompts.push({ text: prompt, weight: imageDescription ? 1.2 : 1.5 });
       if (weightedPrompts.length === 0) weightedPrompts.push({ text: "ambient electronic", weight: 1.0 });
 
       const musicConfig = {};

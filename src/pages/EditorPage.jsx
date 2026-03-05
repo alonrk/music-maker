@@ -209,7 +209,7 @@ export default function EditorPage() {
     }
   }, [tracks, timeline.selectedClipId, engine.currentTime]);
 
-  const handleGenerateTrack = useCallback(async ({ prompt, genre }) => {
+  const handleGenerateTrack = useCallback(async ({ prompt, genre, imageFile }) => {
     try {
       const result = await musicGen.generate({
         prompt,
@@ -219,6 +219,7 @@ export default function EditorPage() {
         brightness: 0.5,
         guidance: 4.0,
         durationChunks: 15,
+        imageFile,
       });
 
       const newRow = trackRows.length;
@@ -289,25 +290,27 @@ export default function EditorPage() {
       />
 
       {/* Secondary bar: nav, tools, generate, save */}
-      <div className="h-10 bg-white border-b border-slate-200 flex items-center px-3 gap-2 flex-shrink-0">
+      <div className="h-10 bg-white border-b border-slate-200 flex items-center px-2 sm:px-3 gap-1 sm:gap-2 flex-shrink-0">
         <button
           onClick={() => navigate("/")}
-          className="text-slate-400 hover:text-slate-600 transition-colors"
+          className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className="text-sm font-medium text-slate-600 truncate">
+        <div className="text-xs sm:text-sm font-medium text-slate-600 truncate max-w-[80px] sm:max-w-none">
           {project?.name || "Untitled Project"}
         </div>
 
-        <div className="w-px h-5 bg-slate-200 mx-1" />
+        <div className="w-px h-5 bg-slate-200 mx-0.5 sm:mx-1 flex-shrink-0" />
 
-        <Toolbar
-          selectedClipId={timeline.selectedClipId}
-          onAction={handleToolbarAction}
-        />
+        <div className="hidden sm:block">
+          <Toolbar
+            selectedClipId={timeline.selectedClipId}
+            onAction={handleToolbarAction}
+          />
+        </div>
 
-        <div className="flex-1" />
+        <div className="flex-1 min-w-0" />
 
         <GeneratePanel
           isOpen={generatePanelOpen}
@@ -319,15 +322,23 @@ export default function EditorPage() {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm text-slate-600 hover:text-slate-800 transition-colors"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs sm:text-sm text-slate-600 hover:text-slate-800 transition-colors flex-shrink-0"
         >
           {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-          Save
+          <span className="hidden sm:inline">Save</span>
         </button>
       </div>
 
+      {/* Mobile toolbar */}
+      <div className="sm:hidden h-9 bg-white border-b border-slate-200 flex items-center justify-center flex-shrink-0">
+        <Toolbar
+          selectedClipId={timeline.selectedClipId}
+          onAction={handleToolbarAction}
+        />
+      </div>
+
       {/* Main area: timeline only */}
-      <div className="flex-1 flex overflow-hidden p-2">
+      <div className="flex-1 flex overflow-hidden p-1 sm:p-2">
         <Timeline
           tracks={tracks}
           trackRows={trackRows}
